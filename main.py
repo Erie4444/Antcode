@@ -24,9 +24,9 @@ from GridBuilderStrat import GridBuilderStrat
 from ScoutStrat import ScoutStrat
 from StarterStrat import StarterStrat
     
-# B. Register strategy class names in team1/team2 tuples below, 1-4 ants per team
-team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat)
-team2 = (GridBuilderStrat,  StarterStrat, HorizontalStrat, VerticalStrat)
+# B. Register strategy class names in team1/team2 tuples below, 1-5 ants per team
+team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat, RandomStrat)
+team2 = (GridBuilderStrat, SmarterRandomStrat, HorizontalStrat, VerticalStrat, RandomStrat)
 DEBUG = False # Change this to True to get more detailed errors from ant strategies
 
 # --- Begin Game ---
@@ -40,8 +40,8 @@ EMPTY = '.'
 WALL = '#'
 NORTH_HILL = '@'
 SOUTH_HILL = 'X'
-NORTH_SYMS = ["A", "B", "C", "D"]
-SOUTH_SYMS = ["E", "F", "G", "H"]
+NORTH_SYMS = ["A", "B", "C", "D", "E"]
+SOUTH_SYMS = ["F", "G", "H", "I", "J"]
 
 class Cell:
     '''Cell in the game matrix.
@@ -105,9 +105,14 @@ class Ant:
     def __repr__(self):
         return self.symbol
 
-def is_open_cell(matrix, x, y):
+def is_open_cell(matrix, x, y, ant=''):
     """Check if a cell in matrix is in bounds and not a wall."""
-    return x > 0 and x < len(matrix) and y > 0 and y < len(matrix[0]) and not matrix[x][y].wall
+    if (x > 0 and x < len(matrix) and y > 0 and y < len(matrix[0]) and not matrix[x][y].wall):
+        return True
+    if (matrix[x][y].wall and ant != ''):
+        print("Collision between " + ant + " and a wall.")
+    
+    return False
     
 def initialize_ants(team1_strats, team1_locs, team2_strats, team2_locs, rows, cols):
     """Instantiate ant classes for each team.
@@ -172,7 +177,7 @@ def generate_game_config():
 def load_save_file(filename):
     """Load saved game data from a file.
 
-    Trusts that map is valid format, with walls, 8 ants, and 2 anthills.
+    Trusts that map is valid format, with walls, 10 ants, and 2 anthills.
 
     Returns:
         Dict[str, int or str] of game data with following keys:
@@ -213,12 +218,12 @@ def place_obstacles(matrix, num_obstacles):
         pick_x = random.randrange(2, (cols - 3)) # don't place on left or right sides
         pick_y = random.randrange(3, (rows - 4)) # don't place in top two or bottom two rows
         if matrix[pick_x][pick_y].is_empty():
-            direction = random.randrange(0, 1) # 0 is horizontal, 1 is vertical
+            direction = random.randrange(0, 2) # 0 is horizontal, 1 is vertical
             length = random.randrange(1, 5) # length of obstacle
             if direction == 0: # horizontal obstacle
                 for x in range(length):
-                    if pick_x < cols/2: # left half of screen
-                        matrix[pick_x][pick_y].wall = True
+                    if pick_x < cols/2: # left half of screen 
+                        matrix[pick_x+x][pick_y].wall = True
                         matrix[cols-pick_x-1-x][rows-pick_y-1].wall = True
                     else: # right half of screen
                         matrix[pick_x-x][pick_y].wall = True
@@ -312,8 +317,14 @@ def construct_map(config):
         matrix = initialize_matrix_random()
         cols = len(matrix)
         rows = len(matrix[0])
-        team1_starting = {'A': (3,1), 'B': (6,1), 'C': (cols-7,1), 'D': (cols-4,1)}
-        team2_starting = {'E': (3,rows-2), 'F': (6,rows-2), 'G': (cols-7,rows-2), 'H': (cols-4,rows-2)}
+        ## Calculate position of middle ant based on anthill location
+        top_hill = int((cols-1)/2)+1
+        if (cols % 2 == 0):
+            bottom_hill = cols-(int((cols)/2))-1
+        else:
+            bottom_hill = cols-(int((cols)/2))
+        team1_starting = {'A': (3,1), 'B': (6,1), 'C': (top_hill,1), 'D': (cols-7,1), 'E': (cols-4,1)}
+        team2_starting = {'F': (3,rows-2), 'G': (6,rows-2), 'H': (bottom_hill, rows-2), 'I': (cols-7,rows-2), 'J': (cols-4,rows-2)}
 
     initialize_ants(team1, team1_starting, team2, team2_starting, len(matrix), len(matrix[0]))
     place_ants(matrix, ants)
@@ -351,6 +362,7 @@ def generate_vision(matrix, x, y):
     return vision
 
 def kill_ant(ant):
+    print("Ant " + ant.symbol + " died.")
     ant.die()
     matrix[ant.x][ant.y].ant = None
 
@@ -438,7 +450,7 @@ def game_loop(matrix, ants, config):
             # Cardinal movement
             if move[0] in transform_xy and len(move) == 1:
                 new_loc = transform_xy[move[0]](loc[0], loc[1])
-                if is_open_cell(matrix, new_loc[0], new_loc[1]):
+                if is_open_cell(matrix, new_loc[0], new_loc[1], ant=a.symbol):
                     loc = new_loc
 
             elif move[0] == "GET":
@@ -483,7 +495,7 @@ def game_loop(matrix, ants, config):
                 proposed_moves[loc] = a
             else:
                 conflict_ant = proposed_moves[loc]
-
+                print("Collision between " + a.symbol + " and " + conflict_ant.symbol)
                 # Return this ant to original position, resolving any chains of conflicts
                 proposed_moves[loc] = None # No one gets to be here
                 current_ant = a
@@ -510,6 +522,8 @@ def game_loop(matrix, ants, config):
                 for a in aList:
                     a.food = True
                 matrix[target_x][target_y].food -= len(aList)
+            else: ## insufficient food
+                print("Invalid GET in " + a.symbol + ": " + str(move))
 
         # Update arena & redraw screen
         for loc, a in proposed_moves.items():
