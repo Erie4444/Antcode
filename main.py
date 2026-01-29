@@ -275,6 +275,7 @@ def initialize_matrix_from_saved(loaded_map):
 def initialize_matrix_random():
     rows = random.randrange(20,25) # Number of rows
     cols = random.randrange(20,25) # Number of columns
+    print(rows,cols)
     north_hill = (int((cols-1)/2), 1) # Location of north hill
     south_hill = (cols-(int((cols-1)/2))-1, rows-2) # Location of south hill
 
