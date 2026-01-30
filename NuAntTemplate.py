@@ -40,6 +40,8 @@ class TemplateAnt(AntStrategy):
         actualVision = [[vision[x][y]for x in range(len(vision))]for y in range(len(vision))]
         ##marks where it is
         self.internalBoard[y][x] = "A"
+        self.targets.append((5,5))
+        self.printFloodBoard()
         ##updates the internalBoard with what it sees
         self.updateInternalBoard(actualVision)
         
@@ -67,6 +69,9 @@ class TemplateAnt(AntStrategy):
             ## if it found another valid direction with the same smallest distance
             elif self.floodBoard[self.y+yOffset][self.x+xOffset]!="" and self.floodBoard[self.y+yOffset][self.x+xOffset] == smallestDistance:
                 validDirections.append(self.stringDirections[index])
+        ##the ant is already on the smallest value
+        if self.floodBoard[self.y][self.x]!="" and self.floodBoard[self.y][self.x] < smallestDistance:
+            return "PASS"
         ##checking if a direction was found
         if validDirections:
             chosenDirection = random.choice(validDirections)
@@ -118,7 +123,6 @@ class TemplateAnt(AntStrategy):
                 if self.internalBoard[yCurrent][xCurrent] != "#" and self.floodBoard[yCurrent][xCurrent] == "":
                     self.floodBoard[yCurrent][xCurrent] = self.floodBoard[Celly][Cellx]+1
                     self.cellsToCheck.append((xCurrent,yCurrent))
-        self.floodBoard[self.y][self.x] = "A"
 
     def printFloodBoard(self):
         for row in self.floodBoard:
