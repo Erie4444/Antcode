@@ -22,6 +22,11 @@ class BasicAnt(AntStrategy):
         super().__init__(max_x, max_y, anthill) # Call constructor in superclass
         self.cellsToCheck = deque([])
         self.targets = []
+        self.foods = []
+        if anthill == "@":
+            self.anthill = (int((max_x-1)/2), 1)
+        else:
+            self.anthill = (max_x-(int((max_x-1)/2))-1, max_y-2)
         self.directions=[(1,1),(1,0),(1,-1),(0,1),(0,-1),(-1,1),(-1,0),(-1,-1)]
         self.stringDirections=["SOUTHEAST","EAST","NORTHEAST","SOUTH","NORTH","SOUTHWEST","WEST","NORTHWEST"]
         self.x=""
@@ -40,49 +45,58 @@ class BasicAnt(AntStrategy):
     def one_step(self, x, y, vision, food):
         self.x = x
         self.y = y
+        self.hasFood = food
         ##converting it so y is the row and x is the column (0,0) is the top left corner
         actualVision = [[vision[x][y]for x in range(len(vision))]for y in range(len(vision))]
         ##marks where it is
         self.internalBoard[y][x] = "A"
         ##updates the internalBoard with what it sees
         self.updateInternalBoard(actualVision)
-
-        ##debug
-        self.printFloodBoard()
         
         ##====PATH GENERATION====
-        if not food:
-            ##to track where the shortest path is (distance for the value in the floodboard and index for the index in the direction lists)
-            smallestDistance = 999999
-            smallestIndex=10
-            for index,offsetTuple in enumerate(self.directions):
-                xOffset = offsetTuple[0]
-                yOffset = offsetTuple[1]
-                ##checking if the cell has a smaller floodvalue than the smallest one stored
-                if self.floodBoard[self.y+yOffset][self.x+xOffset]!="" and self.floodBoard[self.y+yOffset][self.x+xOffset] < smallestDistance:
-                    ##setting the values
-                    smallestIndex = index
-                    smallestDistance=self.floodBoard[self.y+yOffset][self.x+xOffset]
-            ##checking if a direction was found (index of the direction list is 8 so 10 means it didnt change anything)
-            if smallestIndex !=10:
-                print(self.stringDirections[smallestIndex])
-                return self.stringDirections[smallestIndex]
-            
-            ##if no food detected go in a random direction
-            while True:
-                index = random.randrange(0,len(self.directions))
-                xOffset = self.directions[index][0]
-                yOffset = self.directions[index][1]
-                ##to not collide into walls or other ants
-                if self.internalBoard[self.y+yOffset][self.x+xOffset] != "#" and not self.internalBoard[self.y+yOffset][self.x+xOffset].isalpha():
-                    print(self.stringDirections[index])
-                    return self.stringDirections[index]
-
+        direction = self.generateDirection()
+        if direction != None:
+            print(direction)
+            return direction
+        else:
+            return "PASS"
+        
     def generateFloodVision(self):
         vision = [['' for i in range(3)] for j in range(3)]
         for xOffset,yOffset in self.directions:
             vision[1+yOffset][1+xOffset] = self.floodBoard[self.y+yOffset][self.x+xOffset]
         return vision
+
+    def generateDirection(self):
+        ##to track where the shortest path is (distance for the value in the floodboard and index for the index in the direction lists)
+        smallestDistance = 999999
+        smallestIndex=10
+        for index,offsetTuple in enumerate(self.directions):
+            xOffset = offsetTuple[0]
+            yOffset = offsetTuple[1]
+            ##checking if the cell has a smaller floodvalue than the smallest one stored
+            if self.floodBoard[self.y+yOffset][self.x+xOffset]!="" and self.floodBoard[self.y+yOffset][self.x+xOffset] < smallestDistance:
+                ##setting the values
+                smallestIndex = index
+                smallestDistance=self.floodBoard[self.y+yOffset][self.x+xOffset]
+        ##checking if a direction was found (index of the direction list is 8 so 10 means it didnt change anything)
+        if smallestIndex !=10:
+            ##if its destination is within its vision
+            if smallestDistance == 0:
+                if self.hasFood:
+                    return "DROP "+self.stringDirections[smallestIndex]
+                else:
+                    return "GET "+self.stringDirections[smallestIndex]
+            return self.stringDirections[smallestIndex]    
+        ##if no flood values, go in a random direction
+        while True:
+            index = random.randrange(0,len(self.directions))
+            xOffset = self.directions[index][0]
+            yOffset = self.directions[index][1]
+            ##to not collide into walls or other ants
+            if self.internalBoard[self.y+yOffset][self.x+xOffset] != "#" and not self.internalBoard[self.y+yOffset][self.x+xOffset].isalpha():
+                print(self.stringDirections[index])
+                return self.stringDirections[index]
 
     def generateNewCoord(self):
         self.targetCoord = (random.randrange(1,self.max_x-1), random.randrange(1,self.max_y-1))
@@ -90,6 +104,12 @@ class BasicAnt(AntStrategy):
 
     def initQueue(self):
         self.cellsToCheck = deque(self.targets)
+    
+    def initTargets(self):
+        if self.hasFood:
+            self.targets = [self.anthill]
+        else:
+            self.targets = self.foods
     
     def addWalls(self,count):
         for i in range(count):
@@ -99,13 +119,19 @@ class BasicAnt(AntStrategy):
         for xOffset, yOffset in self.directions:
             ##updating the internal board based on vision
             self.internalBoard[self.y+yOffset][self.x+xOffset] = vision[1+yOffset][1+xOffset]
+            ##removes empty food piles
+            if (self.x+xOffset,self.y+yOffset) in self.foods and vision[1+yOffset][1+xOffset] == ".":
+                self.foods.remove((self.x+xOffset,self.y+yOffset))
             ##checking if there is any food in vision
             if vision[1+yOffset][1+xOffset].isnumeric():
-                ##adds the food as a target
-                self.targets.append((self.x+xOffset,self.y+yOffset))
+                ##adds the coordinate to the foods list
+                self.foods.append((self.x+xOffset,self.y+yOffset))
+                self.foods = list(set(self.foods))
         self.updateFloodFill()
+        self.printFloodBoard()
 
     def updateFloodFill(self):
+        self.initTargets()
         self.initQueue()
         self.resetFloodBoard()
         while self.cellsToCheck:
@@ -116,6 +142,7 @@ class BasicAnt(AntStrategy):
                 if self.internalBoard[yCurrent][xCurrent] != self.wall and self.floodBoard[yCurrent][xCurrent] == self.empty:
                     self.floodBoard[yCurrent][xCurrent] = self.floodBoard[Celly][Cellx]+1
                     self.cellsToCheck.append((xCurrent,yCurrent))
+        self.floodBoard[self.y][self.x] = "A"
 
     def printFloodBoard(self):
         for row in self.floodBoard:
