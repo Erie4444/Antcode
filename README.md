@@ -1,4 +1,6 @@
-THIS IS TEAM NU's REPO
+# THIS IS TEAM NU's REPO
+
+
 # Antcode Resouce Collection Game
 Players code the behavior of ants that compete in teams to bring food back to their anthill.
 

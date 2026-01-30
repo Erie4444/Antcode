@@ -23,12 +23,12 @@ from StraightHomeStrat import StraightHomeStrat
 from GridBuilderStrat import GridBuilderStrat
 from ScoutStrat import ScoutStrat
 from StarterStrat import StarterStrat
-from FPATest import FPAAnt
+from BasicAntV1 import BasicAnt
     
 # B. Register strategy class names in team1/team2 tuples below, 1-5 ants per team
 ##team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat, RandomStrat)
 ##team2 = (GridBuilderStrat, SmarterRandomStrat, HorizontalStrat, VerticalStrat, RandomStrat)
-team1 = (FPAAnt,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
+team1 = (BasicAnt,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
 team2 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
 DEBUG = False # Change this to True to get more detailed errors from ant strategies
 
