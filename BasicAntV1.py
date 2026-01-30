@@ -23,6 +23,7 @@ class BasicAnt(AntStrategy):
         self.cellsToCheck = deque([])
         self.targets = []
         self.foods = []
+        ##figuring out where the anthill is
         if anthill == "@":
             self.anthill = (int((max_x-1)/2), 1)
         else:
@@ -31,9 +32,11 @@ class BasicAnt(AntStrategy):
         self.stringDirections=["SOUTHEAST","EAST","NORTHEAST","SOUTH","NORTH","SOUTHWEST","WEST","NORTHWEST"]
         self.x=""
         self.y=""
+        ##initializing the internal boards
         self.resetFloodBoard()
         self.resetInternalBoard()
 
+    ##info sending & receiving not yet started
     def receive_info(self, messages):
         """Receive messages sent by teammates in the last round."""
         pass
@@ -42,6 +45,7 @@ class BasicAnt(AntStrategy):
         """Send messages to teammates at the end of a round."""
         return []
     
+
     def one_step(self, x, y, vision, food):
         self.x = x
         self.y = y
@@ -60,13 +64,15 @@ class BasicAnt(AntStrategy):
             return direction
         else:
             return "PASS"
-        
+    
+    ##generates a 3x3 array of the flood values in its vision
     def generateFloodVision(self):
         vision = [['' for i in range(3)] for j in range(3)]
         for xOffset,yOffset in self.directions:
             vision[1+yOffset][1+xOffset] = self.floodBoard[self.y+yOffset][self.x+xOffset]
         return vision
 
+    ##detecting the shortest path based on the flood fill
     def generateDirection(self):
         ##to track where the shortest path is (distance for the value in the floodboard and index for the index in the direction lists)
         smallestDistance = 999999
@@ -98,13 +104,17 @@ class BasicAnt(AntStrategy):
                 print(self.stringDirections[index])
                 return self.stringDirections[index]
 
+
+    ##used for testing
     def generateNewCoord(self):
         self.targetCoord = (random.randrange(1,self.max_x-1), random.randrange(1,self.max_y-1))
         self.targets.append(self.targetCoord)
 
+    ##initializes the queue for flood fill
     def initQueue(self):
         self.cellsToCheck = deque(self.targets)
     
+    ##sets the current targets
     def initTargets(self):
         if self.hasFood:
             self.targets = [self.anthill]
@@ -130,6 +140,7 @@ class BasicAnt(AntStrategy):
         self.updateFloodFill()
         self.printFloodBoard()
 
+    ##flood fill
     def updateFloodFill(self):
         self.initTargets()
         self.initQueue()
