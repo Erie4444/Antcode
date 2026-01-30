@@ -10,33 +10,20 @@ Just pathing, no other actions
 
 
 class BasicAnt(AntStrategy):
-    empty = ""
-    wall = "#"
-    """An ant's strategy (brains) for moving during the game.
-    
-    See superclass documentation for more about this class's methods and
-    attributes. This is a file you can copy to start making your own strategies.
-    """
-    
     def __init__(self, max_x, max_y, anthill):
         super().__init__(max_x, max_y, anthill) # Call constructor in superclass
+        ##DONT TOUCH THESE VARIABLES (USED FOR FLOODFILL)
         self.cellsToCheck = deque([])
         self.targets = []
-        self.foods = []
-        ##figuring out where the anthill is
-        if anthill == "@":
-            self.anthill = (int((max_x-1)/2), 1)
-        else:
-            self.anthill = (max_x-(int((max_x-1)/2))-1, max_y-2)
         self.directions=[(1,1),(1,0),(1,-1),(0,1),(0,-1),(-1,1),(-1,0),(-1,-1)]
         self.stringDirections=["SOUTHEAST","EAST","NORTHEAST","SOUTH","NORTH","SOUTHWEST","WEST","NORTHWEST"]
         self.x=""
         self.y=""
+
         ##initializing the internal boards
         self.resetFloodBoard()
         self.resetInternalBoard()
 
-    ##info sending & receiving not yet started
     def receive_info(self, messages):
         """Receive messages sent by teammates in the last round."""
         pass
@@ -49,7 +36,6 @@ class BasicAnt(AntStrategy):
     def one_step(self, x, y, vision, food):
         self.x = x
         self.y = y
-        self.hasFood = food
         ##converting it so y is the row and x is the column (0,0) is the top left corner
         actualVision = [[vision[x][y]for x in range(len(vision))]for y in range(len(vision))]
         ##marks where it is
@@ -64,13 +50,6 @@ class BasicAnt(AntStrategy):
             return direction
         else:
             return "PASS"
-    
-    ##generates a 3x3 array of the flood values in its vision
-    def generateFloodVision(self):
-        vision = [['' for i in range(3)] for j in range(3)]
-        for xOffset,yOffset in self.directions:
-            vision[1+yOffset][1+xOffset] = self.floodBoard[self.y+yOffset][self.x+xOffset]
-        return vision
 
     ##detecting the shortest path based on the flood fill
     def generateDirection(self):
@@ -90,14 +69,7 @@ class BasicAnt(AntStrategy):
                 validDirections.append(self.stringDirections[index])
         ##checking if a direction was found
         if validDirections:
-            
             chosenDirection = random.choice(validDirections)
-            ##if its destination is within its vision
-            if smallestDistance == 0:
-                if self.hasFood:
-                    return "DROP "+chosenDirection
-                else:
-                    return "GET "+chosenDirection
             return chosenDirection  
         ##if no flood values, go in a random direction
         while True:
@@ -120,11 +92,8 @@ class BasicAnt(AntStrategy):
         self.cellsToCheck = deque(self.targets)
     
     ##sets the current targets
-    def initTargets(self):
-        if self.hasFood:
-            self.targets = [self.anthill]
-        else:
-            self.targets = self.foods
+    def initTargets(self,coords):
+        self.targets=self.targets
     
     def addWalls(self,count):
         for i in range(count):
@@ -143,7 +112,6 @@ class BasicAnt(AntStrategy):
                 self.foods.append((self.x+xOffset,self.y+yOffset))
                 self.foods = list(set(self.foods))
         self.updateFloodFill()
-        self.printFloodBoard()
 
     ##flood fill
     def updateFloodFill(self):
