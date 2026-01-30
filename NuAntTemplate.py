@@ -9,7 +9,7 @@ Just pathing, no other actions
 '''
 
 
-class BasicAnt(AntStrategy):
+class TemplateAnt(AntStrategy):
     def __init__(self, max_x, max_y, anthill):
         super().__init__(max_x, max_y, anthill) # Call constructor in superclass
         ##DONT TOUCH THESE VARIABLES (USED FOR FLOODFILL)

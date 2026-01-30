@@ -15,14 +15,14 @@ import time
 import traceback
 
 # A. Import student strategies here
-from HorizontalStrat import HorizontalStrat
-from VerticalStrat import VerticalStrat
-from RandomStrat import RandomStrat
-from SmarterRandomStrat import SmarterRandomStrat
-from StraightHomeStrat import StraightHomeStrat
-from GridBuilderStrat import GridBuilderStrat
-from ScoutStrat import ScoutStrat
-from StarterStrat import StarterStrat
+from Old_Templates.GridBuilderStrat import GridBuilderStrat
+from Old_Templates.VerticalStrat import VerticalStrat
+from Old_Templates.RandomStrat import RandomStrat
+from Old_Templates.SmarterRandomStrat import SmarterRandomStrat
+from Old_Templates.StraightHomeStrat import StraightHomeStrat
+from Old_Templates.GridBuilderStrat import GridBuilderStrat
+from Old_Templates.ScoutStrat import ScoutStrat
+from Old_Templates.StarterStrat import StarterStrat
 from BasicAntV1 import BasicAnt
     
 # B. Register strategy class names in team1/team2 tuples below, 1-5 ants per team
