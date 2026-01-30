@@ -92,7 +92,7 @@ class TemplateAnt(AntStrategy):
         self.cellsToCheck = deque(self.targets)
     
     ##sets the current targets
-    def initTargets(self,coords):
+    def initTargets(self):
         self.targets=self.targets
     
     def addWalls(self,count):
@@ -103,14 +103,6 @@ class TemplateAnt(AntStrategy):
         for xOffset, yOffset in self.directions:
             ##updating the internal board based on vision
             self.internalBoard[self.y+yOffset][self.x+xOffset] = vision[1+yOffset][1+xOffset]
-            ##removes empty food piles
-            if (self.x+xOffset,self.y+yOffset) in self.foods and vision[1+yOffset][1+xOffset] == ".":
-                self.foods.remove((self.x+xOffset,self.y+yOffset))
-            ##checking if there is any food in vision
-            if vision[1+yOffset][1+xOffset].isnumeric():
-                ##adds the coordinate to the foods list
-                self.foods.append((self.x+xOffset,self.y+yOffset))
-                self.foods = list(set(self.foods))
         self.updateFloodFill()
 
     ##flood fill
@@ -123,7 +115,7 @@ class TemplateAnt(AntStrategy):
             Cellx,Celly = cell[0],cell[1]
             for xOffset,yOffset in self.directions:
                 xCurrent,yCurrent = Cellx+xOffset,Celly+yOffset
-                if self.internalBoard[yCurrent][xCurrent] != self.wall and self.floodBoard[yCurrent][xCurrent] == self.empty:
+                if self.internalBoard[yCurrent][xCurrent] != "#" and self.floodBoard[yCurrent][xCurrent] == "":
                     self.floodBoard[yCurrent][xCurrent] = self.floodBoard[Celly][Cellx]+1
                     self.cellsToCheck.append((xCurrent,yCurrent))
         self.floodBoard[self.y][self.x] = "A"
@@ -143,9 +135,9 @@ class TemplateAnt(AntStrategy):
         print(self.targets)
     
     def resetFloodBoard(self):
-        self.floodBoard = [[self.empty for i in range(self.max_x)] for j in range(self.max_y)]
+        self.floodBoard = [["" for i in range(self.max_x)] for j in range(self.max_y)]
         for x,y in self.targets:
             self.floodBoard[y][x]=0
 
     def resetInternalBoard(self):
-        self.internalBoard = [["." if i>0 and i<self.max_x-1 and j>0 and j<self.max_y-1 else self.wall for i in range(self.max_x)] for j in range(self.max_y)]
+        self.internalBoard = [["." if i>0 and i<self.max_x-1 and j>0 and j<self.max_y-1 else "#" for i in range(self.max_x)] for j in range(self.max_y)]
