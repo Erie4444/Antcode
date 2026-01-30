@@ -17,11 +17,11 @@ class FPAAnt(AntStrategy):
         self.cellsToCheck = deque([])
         self.targets = []
         self.directions=[(1,1),(1,0),(1,-1),(0,1),(0,-1),(-1,1),(-1,0),(-1,-1)]
+        self.stringDirections=["SOUTHEAST","EAST","NORTHEAST","SOUTH","NORTH","SOUTHWEST","WEST","NORTHWEST"]
+        self.x=""
+        self.y=""
         self.resetFloodBoard()
         self.resetInternalBoard()
-        self.generateNewCoord()
-        self.generateNewCoord()
-        self.generateNewCoord()
 
     def receive_info(self, messages):
         """Receive messages sent by teammates in the last round."""
@@ -32,8 +32,35 @@ class FPAAnt(AntStrategy):
         return []
     
     def one_step(self, x, y, vision, food):
-        '''Calculate and return a randomly chosen, but valid, next move.'''
+        self.x = x
+        self.y = y
+        ##converting it so y is the row and x is the column (0,0) is the top left corner
+        actualVision = [[vision[x][y]for x in range(len(vision))]for y in range(len(vision))]
+        ##marks where it is
+        self.internalBoard[y][x] = "A"
+        ##updates the internalBoard with what it sees
+        self.updateInternalBoard(actualVision)
+        ##to track where the shortest path is (distance for the value in the floodboard and index for the index in the direction lists)
+        smallestDistance = 999999
+        smallestIndex=10
+        for index,offsetTuple in enumerate(self.directions):
+            xOffset = offsetTuple[0]
+            yOffset = offsetTuple[1]
+            ##checking if the cell has a smaller floodvalue than the smallest one stored
+            if self.floodBoard[self.y+yOffset][self.x+xOffset]!="" and self.floodBoard[self.y+yOffset][self.x+xOffset] < smallestDistance:
+                ##setting the values
+                smallestIndex = index
+                smallestDistance=self.floodBoard[self.y+yOffset][self.x+xOffset]
+        ##checking if a direction was found (index of the direction list is 8 so 10 means it didnt change anything)
+        if smallestIndex !=10:
+            return self.stringDirections[smallestIndex]
         return "PASS"
+
+    def generateFloodVision(self):
+        vision = [['' for i in range(3)] for j in range(3)]
+        for xOffset,yOffset in self.directions:
+            vision[1+yOffset][1+xOffset] = self.floodBoard[self.y+yOffset][self.x+xOffset]
+        return vision
 
     def generateNewCoord(self):
         self.targetCoord = (random.randrange(1,self.max_x-1), random.randrange(1,self.max_y-1))
@@ -46,6 +73,16 @@ class FPAAnt(AntStrategy):
         for i in range(count):
             self.internalBoard[random.randrange(1,self.max_y)][random.randrange(1,self.max_x-1)] = "#"
     
+    def updateInternalBoard(self,vision):
+        for xOffset, yOffset in self.directions:
+            ##updating the internal board based on vision
+            self.internalBoard[self.y+yOffset][self.x+xOffset] = vision[1+yOffset][1+xOffset]
+            ##checking if there is any food in vision
+            if vision[1+yOffset][1+xOffset].isnumeric():
+                ##adds the food as a target
+                self.targets.append((self.x+xOffset,self.y+yOffset))
+        self.updateFloodFill()
+
     def updateFloodFill(self):
         self.initQueue()
         self.resetFloodBoard()
@@ -69,8 +106,8 @@ class FPAAnt(AntStrategy):
     def printCellQueue(self):
         print(self.cellsToCheck)
     
-    def printChosenCoord(self):
-        print(self.targetCoord)
+    def printTargets(self):
+        print(self.targets)
     
     def resetFloodBoard(self):
         self.floodBoard = [[self.empty for i in range(self.max_x)] for j in range(self.max_y)]
@@ -79,9 +116,3 @@ class FPAAnt(AntStrategy):
 
     def resetInternalBoard(self):
         self.internalBoard = [["." if i>0 and i<self.max_x-1 and j>0 and j<self.max_y-1 else self.wall for i in range(self.max_x)] for j in range(self.max_y)]
-
-      
-
-testAnt = FPAAnt(20,20,1)
-testAnt.updateFloodFill()
-testAnt.printFloodBoard()

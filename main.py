@@ -23,10 +23,13 @@ from StraightHomeStrat import StraightHomeStrat
 from GridBuilderStrat import GridBuilderStrat
 from ScoutStrat import ScoutStrat
 from StarterStrat import StarterStrat
+from FPATest import FPAAnt
     
 # B. Register strategy class names in team1/team2 tuples below, 1-5 ants per team
-team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat, RandomStrat)
-team2 = (GridBuilderStrat, SmarterRandomStrat, HorizontalStrat, VerticalStrat, RandomStrat)
+##team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat, RandomStrat)
+##team2 = (GridBuilderStrat, SmarterRandomStrat, HorizontalStrat, VerticalStrat, RandomStrat)
+team1 = (FPAAnt,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
+team2 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
 DEBUG = False # Change this to True to get more detailed errors from ant strategies
 
 # --- Begin Game ---
@@ -273,8 +276,10 @@ def initialize_matrix_from_saved(loaded_map):
     return new_matrix
     
 def initialize_matrix_random():
-    rows = random.randrange(20,25) # Number of rows
-    cols = random.randrange(20,25) # Number of columns
+    ##rows = random.randrange(20,25) # Number of rows
+    ##cols = random.randrange(20,25) # Number of columns
+    rows = 20
+    cols = 20
     print(rows,cols)
     north_hill = (int((cols-1)/2), 1) # Location of north hill
     south_hill = (cols-(int((cols-1)/2))-1, rows-2) # Location of south hill
