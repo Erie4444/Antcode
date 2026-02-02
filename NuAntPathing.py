@@ -1,3 +1,17 @@
+'''
+Eric Zhao
+2/1/2026
+Standalone pathing algorithm for ants
+Just instantiate this in your ant, add any coordinates into self.targets
+then run update() to get possible directions
+
+this returns a list with 2 items
+Item 1. type: boolean
+Just says if the destination is within the vision of the ant
+
+Item 2. type: list
+Contains all possible cardinal directions
+'''
 from collections import deque
 class NuAntPathing():
     empty = ''
@@ -5,7 +19,6 @@ class NuAntPathing():
     maxInternalBoardItemLength = 1
     maxFloodBoardItemLength = 2
     offsetToDirections = {(-1,-1):"NORTHWEST",(-1,0):"WEST",(-1,1):"SOUTHWEST",(0,-1):"NORTH",(0,1):"SOUTH",(1,-1):"NORTHEAST",(1,0):"EAST",(1,1):"SOUTHEAST"}
-    directionsToOffset = {"NORTHWEST":(-1,-1),"WEST":(-1,0),"SOUTHWEST":(-1,1),"NORTH":(0,-1),"SOUTH":(0,1),"NORTHEAST":(1,-1),"EAST":(1,0),"SOUTHEAST":(1,1)}
     def __init__(self,rows: int,cols: int,x: int, y: int,targets: list = []):
         self.targets = targets
         self.rows = rows
@@ -16,6 +29,7 @@ class NuAntPathing():
         self.resetWallBoard()
 
     def initQueue(self):
+        ##setting up the queue and marking the targets on the floodboard
         self.floodQueue = deque(self.targets)
         for target in self.targets:
             self.floodBoard[target[1]][target[0]] = 0
@@ -35,6 +49,7 @@ class NuAntPathing():
     def __repr__(self):
         return self.getPrettyFloodBoard()
 
+    ##does the flood fill algo and updated floodBoard
     def updateFloodBoard(self):
         self.resetFloodBoard()
         self.initQueue()
@@ -69,3 +84,8 @@ class NuAntPathing():
         if smallestDistance == 0:
             canSeeDestination = True
         return (canSeeDestination,validDirections)
+
+    def update(self):
+        self.updateFloodBoard()
+        directions = self.generateValidDirections()
+        return directions
