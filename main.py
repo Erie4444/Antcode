@@ -23,13 +23,12 @@ from Old_Templates.StraightHomeStrat import StraightHomeStrat
 from Old_Templates.GridBuilderStrat import GridBuilderStrat
 from Old_Templates.ScoutStrat import ScoutStrat
 from Old_Templates.StarterStrat import StarterStrat
-from NuAntTemplate import TemplateAnt
-from BasicAntV1 import BasicAnt
+from NuAntTemplateV2Test import EricAntV2
     
 # B. Register strategy class names in team1/team2 tuples below, 1-5 ants per team
 ##team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat, RandomStrat)
 ##team2 = (GridBuilderStrat, SmarterRandomStrat, HorizontalStrat, VerticalStrat, RandomStrat)
-team1 = (TemplateAnt,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
+team1 = (EricAntV2,StarterStrat,StarterStrat,StarterStrat,EricAntV2)
 team2 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
 DEBUG = True # Change this to True to get more detailed errors from ant strategies
 

@@ -4,10 +4,7 @@ This explains each method in the NuAntPathing class
 ### initializing the class
 Inputs: rows, cols, x, y, targets  
 rows - integer: the amount of rows in the board  
-cols - integer: the amount of columns in the board  
-x - integer: the x position of the ant  
-y - integer: the y position of the ant  
-targets - list: a list of coordinates that the pathing should target  
+cols - integer: the amount of columns in the board   
 Outputs: None  
 Just initializes the boards & instance variables  
 ### initQueue
@@ -22,6 +19,10 @@ This just clears the `self.floodBoard` variable as a new empty 2d matrix size `s
 Inputs: None  
 Outputs: None  
 This just clears the `self.wallBoard` variable as a new empty 2d matrix size `self.rows` by `self.cols`  
+### clearTargets
+Inputs: None  
+Outputs: None  
+Resets the `self.targets` list to `[]`  
 ### addWall
 Inputs: x, y  
 x - integer: the x position of the wall  

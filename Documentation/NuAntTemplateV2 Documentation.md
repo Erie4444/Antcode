@@ -24,3 +24,6 @@ Line-by-line walkthrough
 `inVision, directions = pathing.update()` this assigns `inVision` with `canSeeDirection` which says if the destination is in the ant's vision, and assigns `directions` with `validDirections` which is all the possible cardinal directions the ant can follow to go the fastest path  
 `return random.choice(directions)` picks a random direction in the `directions` list and returns it
 
+##### More advanced features
+There is also a variable callsed `tempWalls` which is a list of coordinates for places the ant shouldn't go for ONLY this round, so the actual `self.wallBoard` doesn't block it out. This is useful for blocking out other ant's positions so there aren't any conflicting paths, but you don't want to permanently block that ant's position as they could move away from that position later on.  
+This variable can be treated the same as `targets` so you would append any coordinates you want to be omitted this round
