@@ -10,7 +10,7 @@ new V2 template using NuAntPathing.py for easier readability
 class TemplateAnt(AntStrategy):
     def __init__(self, max_x, max_y, anthill):
         super().__init__(max_x, max_y, anthill) # Call constructor in superclass
-        self.pathing = NuAntPathing(max_x,max_y,0,0)
+        self.pathing = NuAntPathing(max_x,max_y)
 
     def receive_info(self, messages):
         """Receive messages sent by teammates in the last round."""
