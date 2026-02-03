@@ -31,7 +31,9 @@ class NuAntPathing():
         ##setting up the queue and marking the targets on the floodboard
         self.floodQueue = deque(self.targets)
         for target in self.targets:
-            self.floodBoard[target[1]][target[0]] = 0
+            ##makes sure the target is actually reachable
+            if self.wallBoard[target[1]][target[0]] != self.wall:
+                self.floodBoard[target[1]][target[0]] = 0
 
     def resetFloodBoard(self):
         self.floodBoard = [[self.empty for x in range(self.cols)] for y in range(self.rows)]
