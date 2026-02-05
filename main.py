@@ -15,20 +15,17 @@ import time
 import traceback
 
 # A. Import student strategies here
-from Old_Templates.GridBuilderStrat import GridBuilderStrat
-from Old_Templates.VerticalStrat import VerticalStrat
-from Old_Templates.RandomStrat import RandomStrat
-from Old_Templates.SmarterRandomStrat import SmarterRandomStrat
-from Old_Templates.StraightHomeStrat import StraightHomeStrat
-from Old_Templates.GridBuilderStrat import GridBuilderStrat
-from Old_Templates.ScoutStrat import ScoutStrat
 from Old_Templates.StarterStrat import StarterStrat
-from NuAntTemplateV2Test import EricAntV2
+from Ant1 import Ant1
+from Ant2 import Ant2
+from Ant3 import Ant3
+from Ant4 import Ant4
+from Ant5 import Ant5
     
 # B. Register strategy class names in team1/team2 tuples below, 1-5 ants per team
 ##team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat, RandomStrat)
 ##team2 = (GridBuilderStrat, SmarterRandomStrat, HorizontalStrat, VerticalStrat, RandomStrat)
-team1 = (EricAntV2,EricAntV2,EricAntV2,EricAntV2,EricAntV2)
+team1 = (Ant1,Ant2,Ant3,Ant4,Ant5)
 team2 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
 DEBUG = True # Change this to True to get more detailed errors from ant strategies
 
@@ -501,7 +498,7 @@ def game_loop(matrix, ants, config):
                 proposed_moves[loc] = a
             else:
                 conflict_ant = proposed_moves[loc]
-                print("Collision between " + a.symbol + " and " + conflict_ant.symbol)
+                ##print("Collision between " + a.symbol + " and " + conflict_ant.symbol)
                 # Return this ant to original position, resolving any chains of conflicts
                 proposed_moves[loc] = None # No one gets to be here
                 current_ant = a

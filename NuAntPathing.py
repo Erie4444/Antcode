@@ -18,11 +18,15 @@ class NuAntPathing():
     wall = '#'
     maxInternalBoardItemLength = 1
     maxFloodBoardItemLength = 2
+    stuckCountMax = 3
     offsetToDirections = {(-1,-1):"NORTHWEST",(-1,0):"WEST",(-1,1):"SOUTHWEST",(0,-1):"NORTH",(0,1):"SOUTH",(1,-1):"NORTHEAST",(1,0):"EAST",(1,1):"SOUTHEAST"}
     def __init__(self,rows: int,cols: int):
         self.targets = []
         self.rows = rows
         self.cols = cols
+        self.x = 0
+        self.y = 0
+        self.stuckCount = 0
         self.tempWalls = []
         self.resetFloodBoard()
         self.resetWallBoard()
@@ -67,6 +71,10 @@ class NuAntPathing():
                     self.floodQueue.append((xCurrent,yCurrent))
     
     def updatePosition(self,x: int,y: int):
+        if x == self.x and y == self.y: ##position is the same as last round
+            self.stuckCount+=1
+        else:
+            self.stuckCount=0
         self.x = x
         self.y = y
 
@@ -77,6 +85,7 @@ class NuAntPathing():
         validDirections = []
         smallestDistance = 9999
         canSeeDestination = False
+        stuck = False
         for offset,direction in self.offsetToDirections.items():
             xOffset,yOffset = offset
             if self.floodBoard[self.y+yOffset][self.x+xOffset] != self.empty and not (self.x+xOffset,self.y+yOffset) in self.tempWalls:
@@ -87,7 +96,9 @@ class NuAntPathing():
                     validDirections.append(direction)
         if smallestDistance == 0:
             canSeeDestination = True
-        return (canSeeDestination,validDirections)
+        if not canSeeDestination and self.stuckCount > self.stuckCountMax:
+            stuck = True
+        return (canSeeDestination,validDirections,stuck)
 
     def update(self):
         self.updateFloodBoard()
