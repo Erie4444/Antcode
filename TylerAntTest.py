@@ -15,9 +15,6 @@ class TylerAnt(AntStrategy):
         self.anthillCoord = findAnthillCoord(anthill, max_x, max_y)
         self.x = 0
         self.y = 0
-        #track previous position to detect being stuck in collisions
-        self.prev_pos = None
-        self.stuck_rounds = 0
 
     def receive_info(self, messages):
         """Receive messages sent by teammates in the last round."""
@@ -31,7 +28,17 @@ class TylerAnt(AntStrategy):
         self.x = x
         self.y = y
         self.pathing.updatePosition(x,y)
-
+        # make random coordinates to head towards if not holding food and no food in vision
+        # Choose a random target within interior map borders (avoid wall edges)
+        if self.max_x > 2:
+            random_x = random.randint(1, self.max_x - 2)
+        else:
+            random_x = 0
+        if self.max_y > 2:
+            random_y = random.randint(1, self.max_y - 2)
+        else:
+            random_y = 0
+        
         #pick up visible food if not currently carrying
         if not food:
             found_food = next(((vx, vy) for vx, row in enumerate(vision) for vy, item in enumerate(row) if item and item.isdigit() and int(item) > 0), None)
@@ -51,7 +58,8 @@ class TylerAnt(AntStrategy):
             self.pathing.clearTargets()
             self.pathing.targets.append(self.anthillCoord)
         else:
-            self.pathing.targets.append((self.max_x//2, self.max_y//2))
+            self.pathing.clearTargets()
+            self.pathing.targets.append((random_x, random_y))
 
         inVision, directions = self.pathing.update()
         if directions:
