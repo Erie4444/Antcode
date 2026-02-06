@@ -1,4 +1,4 @@
-from NuAntTemplateV2Test import EricAntV2
+from EricAntV2 import EricAntV2
 import random
 
 class Ant1(EricAntV2):
