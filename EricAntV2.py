@@ -57,7 +57,10 @@ class EricAntV2(AntStrategy):
     def checkHasTarget(self):
         if not self.pathing.targets or not self.foodCoords:
             self.pathing.clearTargets()
-            self.pathing.targets.append((self.max_x-2,self.max_y-2))
+            if self.anthill == "@":
+                self.pathing.targets.append((self.max_x-2,self.max_y-2))
+            else:
+                self.pathing.targets.append((2,2))
 
     def one_step(self, x, y, vision, food):
         self.x = x
@@ -96,7 +99,7 @@ class EricAntV2(AntStrategy):
         with open(r"AntLog.txt","a") as log:
             pass
             ##log.write(" ".join([f"Ant{self.priority}",str(self.roundCounter),str(self.x),str(self.y),str(self.pathing.targets),str(food),str(action)])+"\n")
-        print([f"Ant{self.priority}",self.x,self.y,self.pathing.targets,self.priorityTarget,food,action])
+        print([f"Ant{self.priority} Side: {self.anthill} Anthill Coord: {self.anthillCoord} Invision {inVision}",self.x,self.y,self.pathing.targets,self.priorityTarget,food,action])
         return action
 
     def parseVision(self,vision):
@@ -106,7 +109,7 @@ class EricAntV2(AntStrategy):
                     self.pathing.addWall(x-1+self.x,y-1+self.y)
                     self.wallCoords.append((x-1+self.x,y-1+self.y))
                     self.wallCoords = list(set(self.wallCoords))
-                elif item.isalpha(): ## if it is another ant
+                elif item.isalpha() and not item in self.anthills: ## if it is another ant
                     self.pathing.tempWalls.append((x-1+self.x,y-1+self.y))
                 elif item != self.empty and not item in self.anthills: ## if it is a food pile
                     self.foodCoords.append((x-1+self.x,y-1+self.y))

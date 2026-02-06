@@ -52,6 +52,7 @@ class NuAntPathing():
         self.wallBoard[y][x] = self.wall
 
     def getPrettyFloodBoard(self):
+        self.floodBoard[self.y][self.x] = "A"
         return "\n".join([" ".join([" "*(self.maxFloodBoardItemLength-len(str(item)))+str(item) for item in row]) for row in self.floodBoard])
 
     def __repr__(self):

@@ -26,7 +26,8 @@ from Ant5 import Ant5
 ##team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat, RandomStrat)
 ##team2 = (GridBuilderStrat, SmarterRandomStrat, HorizontalStrat, VerticalStrat, RandomStrat)
 team1 = (Ant1,Ant2,Ant3,Ant4,Ant5)
-team2 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
+team2 = (Ant1,Ant2,Ant3,Ant4,Ant5)
+##team1 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
 DEBUG = True # Change this to True to get more detailed errors from ant strategies
 
 # --- Begin Game ---
