@@ -5,7 +5,8 @@ import random
 '''
 Eric Zhao
 2/2/2026
-A test and using NuAntTemplateV2
+Eric's worker ant (food gathering)
+Modified: 2/8/2026
 '''
 class EricAntV2(AntStrategy):
     with open(r"AntLog.txt", "w") as log:
@@ -17,6 +18,7 @@ class EricAntV2(AntStrategy):
         super().__init__(max_x, max_y, anthill) # Call constructor in superclass
         self.roundCounter = 0
         self.pathing = NuAntPathing(max_x,max_y)
+        self.patrolPoints = [(2,2),(max_x-2,max_y-2),(2,max_y-2),(max_x-2,2)]
         self.foodCoords = []
         self.wallCoords = []
         self.priorityTarget = ()
@@ -109,7 +111,7 @@ class EricAntV2(AntStrategy):
                     self.pathing.addWall(x-1+self.x,y-1+self.y)
                     self.wallCoords.append((x-1+self.x,y-1+self.y))
                     self.wallCoords = list(set(self.wallCoords))
-                elif item.isalpha() and not item in self.anthills: ## if it is another ant
+                elif item.isalpha() and not item in self.anthills and (x-1+self.x,y-1+self.y) != self.anthillCoord: ## if it is another ant NOTE: 2nd part of the statement is to ignore if its the anthill to mitigate the AnnoyingAnt
                     self.pathing.tempWalls.append((x-1+self.x,y-1+self.y))
                 elif item != self.empty and not item in self.anthills: ## if it is a food pile
                     self.foodCoords.append((x-1+self.x,y-1+self.y))
