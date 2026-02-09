@@ -1,4 +1,3 @@
-
 def transpose(matrix: list):
     return [[matrix[x][y]for x in range(len(matrix))]for y in range(len(matrix))]
 
