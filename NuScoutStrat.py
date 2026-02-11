@@ -2,99 +2,112 @@ from AntStrategy import AntStrategy
 from NuAntPathing import NuAntPathing
 from Util import *
 import random
+import json
+
 '''
-Sherjil, Pathing by Eric Zhao
+Sherjil Khan
 2/2/2026
-A test and using NuAntTemplateV2
+Uses NuAntTemplateV2. Modified to grab one piece of food and then scout full tame afterwards.
 '''
+
 class NuScoutStrat(AntStrategy):
     empty = '.'
     wall = '#'
     anthills = '@X'
+
     def __init__(self, max_x, max_y, anthill):
-        super().__init__(max_x, max_y, anthill) # Call constructor in superclass
-        self.pathing = NuAntPathing(max_x,max_y)
+        super().__init__(max_x, max_y, anthill)
+
+        self.pathing = NuAntPathing(max_x, max_y)
         self.foodCoords = []
         self.wallCoords = []
         self.priorityTarget = ()
-        self.removedCoords = ()
-        self.anthillCoord = findAnthillCoord(anthill,max_x,max_y)
-        
-        self.hasDelivered = False
-        self.mode = "Food"
+        self.removedCoords = []             
+        self.blackListedCoords = []          
+        self.anthillCoord = findAnthillCoord(anthill, max_x, max_y)
+        self.priority = 0
 
     def receive_info(self, messages):
         """Receive messages sent by teammates in the last round."""
+        blackListedCoords = []
+        removedCoords = []
         for message in messages:
-            if message["POSE"] != (self.x,self.y): #not your own message
+            if message["ID"] != self.priority: #not your own message
                 self.foodCoords = list(set(self.foodCoords+message["FOOD"]))
                 self.wallCoords = list(set(self.wallCoords+message["WALLS"]))
-                if message["TARGET"] and message["TARGET"] in self.foodCoords:
-                    self.foodCoords.remove(message["TARGET"])
+                if message["TARGET"]:
+                    blackListedCoords.append(message["TARGET"])
                 for coord in message["REMOVED"]:
                     if coord in self.foodCoords:
-                        self.foodCoords.remove(coord)
+                        removedCoords.append(message["REMOVED"])
+        for coord in blackListedCoords:
+            if coord in self.foodCoords:
+                self.foodCoords.remove(coord)
+        for coord in removedCoords:
+            if coord in self.foodCoords:
+                self.foodCoords.remove(coord)
 
     def send_info(self):
         """Send messages to teammates at the end of a round."""
-        return [{"POSE":(self.x,self.y),"FOOD":self.foodCoords,"WALLS":self.wallCoords,"TARGET":self.priorityTarget,"REMOVED":self.removedCoords}]
-    
+        return [{"ID":self.priority,"FOOD":self.foodCoords,"WALLS":self.wallCoords,"TARGET":self.priorityTarget,"REMOVED":self.removedCoords}]
+
+    def assignNewTarget(self):
+        if self.foodCoords:
+            self.priorityTarget = random.choice(self.foodCoords)
+            self.pathing.clearTargets()
+            self.pathing.targets.append(self.priorityTarget)
+
     def one_step(self, x, y, vision, food):
         self.x = x
         self.y = y
         action = ''
-        self.pathing.updatePosition(x,y)
+
+        self.pathing.updatePosition(x, y)
         self.parseVision(vision)
-        if self.mode == "Food":
-            if food:
-                    self.pathing.clearTargets()
-                    self.priorityTarget = ()
-                    self.pathing.targets.append(self.anthillCoord)
-            else:
-                if not self.priorityTarget in self.foodCoords and self.foodCoords:
-                    self.priorityTarget = random.choice(self.foodCoords)
-                    self.pathing.clearTargets()
-                    self.pathing.targets.append(self.priorityTarget)
-        elif self.mode == "Scout":
-            if not self.pathing.targets:
-                randomX = random.randint(1, self.max_x-2)
-                randomY = random.randint(1, self.max_y-2)
-                self.pathing.targets.append((randomX,randomY))
 
-
-            
+        if food:
+            self.pathing.clearTargets()
+            self.priorityTarget = ()
+            self.pathing.targets.append(self.anthillCoord)
+        else:
+            if self.foodCoords and self.priorityTarget not in self.foodCoords:
+                self.assignNewTarget()
 
         if not self.pathing.targets:
-            self.pathing.targets.append((10,10))
+            self.pathing.targets.append((10, 10))
 
-        inVision,directions = self.pathing.update()
+        inVision, directions, _ = self.pathing.update()
+        if not directions:
+            directions = ["N", "E", "W", "S"]
         pickedDirection = random.choice(directions)
-        if inVision:
-            if food:
-                action = "DROP "
-                self.mode = "Scout"
-                self.pathing.clearTargets()
+        
 
-            elif self.mode == "Food":
-                action = "GET "
-        action+=pickedDirection
-        print([self.pathing.targets,self.priorityTarget,food,action])
+        if inVision and len(directions) == 1:
+            action = "DROP " if food else "GET "
+
+        action += pickedDirection
+        print([self.pathing.targets, self.priorityTarget, food, action])
         return action
 
-
-    def parseVision(self,vision):
+    def parseVision(self, vision):
         for y, row in enumerate(transpose(vision)):
             for x, item in enumerate(row):
-                if item == self.wall: ##if it is a wall
-                    self.pathing.addWall(x-1+self.x,y-1+self.y)
-                    self.wallCoords.append((x-1+self.x,y-1+self.y))
+                worldX = x - 1 + self.x
+                worldY = y - 1 + self.y
+
+                if item == self.wall:
+                    self.pathing.addWall(worldX, worldY)
+                    self.wallCoords.append((worldX, worldY))
                     self.wallCoords = list(set(self.wallCoords))
-                elif item.isalpha(): ## if it is another ant
-                    self.pathing.tempWalls.append((x-1+self.x,y-1+self.y))
-                elif item != self.empty and not item in self.anthills: ## if it is a food pile
-                    self.foodCoords.append((x-1+self.x,y-1+self.y))
+
+                elif item.isalpha():
+                    self.pathing.tempWalls.append((worldX, worldY))
+
+                elif item != self.empty and item not in self.anthills:
+                    self.foodCoords.append((worldX, worldY))
                     self.foodCoords = list(set(self.foodCoords))
-                else: ## it is empty or an anthill
-                    if (x-1+self.x,y-1+self.y) in self.foodCoords:
-                        self.foodCoords.remove((x-1+self.x,y-1+self.y))
-                        self.removedCoords = (x-1+self.x,y-1+self.y)
+
+                else:
+                    if (worldX, worldY) in self.foodCoords:
+                        self.foodCoords.remove((worldX, worldY))
+                        self.removedCoords.append((worldX, worldY))
