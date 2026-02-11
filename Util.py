@@ -5,4 +5,4 @@ def findAnthillCoord(anthill: str,rows: int, cols: int):
     if anthill == "@":
         return (int((cols-1)/2), 1)
     else:
-        return (rows-(int((cols-1)/2))-1, rows-2)
+        return (cols-(int((cols-1)/2))-1, rows-2)
