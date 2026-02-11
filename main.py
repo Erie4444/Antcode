@@ -21,14 +21,14 @@ from Ant2 import Ant2
 from Ant3 import Ant3
 from Ant4 import Ant4
 from Ant5 import Ant5
+from EricAntV3 import EricAntV3
 from AnnoyingAnt import AnnoyingAnt
 
 # B. Register strategy class names in team1/team2 tuples below, 1-5 ants per team
 ##team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat, RandomStrat)
 ##team2 = (GridBuilderStrat, SmarterRandomStrat, HorizontalStrat, VerticalStrat, RandomStrat)
 team1 = (Ant1,Ant2,Ant3,Ant4,Ant5)
-team2 = (Ant1,Ant2,Ant3,Ant4,Ant5)
-#team2 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
+team2 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
 DEBUG = True # Change this to True to get more detailed errors from ant strategies
 
 # --- Begin Game ---
@@ -36,6 +36,7 @@ DEBUG = True # Change this to True to get more detailed errors from ant strategi
 # Configuration variables for randomly generated maps
 NUM_OBSTACLES = 10 # Number of obstacles
 AMOUNT_FOOD = random.randrange(20, 25) # Number of food piles
+##AMOUNT_FOOD = 0
 
 # Matrix constants
 EMPTY = '.'
@@ -275,11 +276,8 @@ def initialize_matrix_from_saved(loaded_map):
     return new_matrix
     
 def initialize_matrix_random():
-    ##rows = random.randrange(20,25) # Number of rows
-    ##cols = random.randrange(20,25) # Number of columns
-    rows = 20
-    cols = 20
-    print(rows,cols)
+    rows = random.randrange(20,25) # Number of rows
+    cols = random.randrange(20,25) # Number of columns
     north_hill = (int((cols-1)/2), 1) # Location of north hill
     south_hill = (cols-(int((cols-1)/2))-1, rows-2) # Location of south hill
 
