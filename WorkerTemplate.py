@@ -24,6 +24,9 @@ class WorkerTemplate (WorkerStrategy):
     def defaultAlgorithm(self):
         super().defaultAlgorithm()
     
+    def stuckAlgorithm(self):
+        super().stuckAlgorithm()
+    
     def step(self):
         super().step()
     
