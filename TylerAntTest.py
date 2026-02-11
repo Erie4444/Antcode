@@ -27,41 +27,27 @@ class TylerAnt(AntStrategy):
     def one_step(self, x, y, vision, food):
         self.x = x
         self.y = y
-        self.pathing.updatePosition(x,y)
-        # make random coordinates to head towards if not holding food and no food in vision
-        # Choose a random target within interior map borders (avoid wall edges)
-        if self.max_x > 2:
-            random_x = random.randint(1, self.max_x - 2)
-        else:
-            random_x = 0
-        if self.max_y > 2:
-            random_y = random.randint(1, self.max_y - 2)
-        else:
-            random_y = 0
-        
-        #pick up visible food if not currently carrying
+        cardinals = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+
+        if (self.x, self.y) == self.anthillCoord:
+            if food:
+                return "DROP HERE"
+            return NuAntPathing.offsetToDirections[random.choice(cardinals)]
+
         if not food:
-            found_food = next(((vx, vy) for vx, row in enumerate(vision) for vy, item in enumerate(row) if item and item.isdigit() and int(item) > 0), None)
-            if found_food:
-                dx, dy = found_food[0] - 1, found_food[1] - 1
-                direction = NuAntPathing.offsetToDirections.get((dx, dy), "HERE")
-                return "GET " + direction
+            for i in range(3):
+                for j in range(3):
+                    if vision[i][j] and vision[i][j].isdigit():
+                        return "GET " + NuAntPathing.offsetToDirections[(i - 1, j - 1)]
+            return NuAntPathing.offsetToDirections[random.choice(cardinals)]
 
-        if food:
-            #if holding food and anthill in vision, drop food in anthill
-            found_hill = next(((vx, vy) for vx, row in enumerate(vision) for vy, item in enumerate(row) if item == self.anthill), None)
-            if found_hill:
-                dx, dy = found_hill[0] - 1, found_hill[1] - 1
-                direction = NuAntPathing.offsetToDirections.get((dx, dy), "HERE")
-                return "DROP " + direction
-            #otherwise head for anthill
-            self.pathing.clearTargets()
-            self.pathing.targets.append(self.anthillCoord)
-        else:
-            self.pathing.clearTargets()
-            self.pathing.targets.append((random_x, random_y))
+        for i in range(3):
+            for j in range(3):
+                if vision[i][j] == self.anthill:
+                    return "DROP " + NuAntPathing.offsetToDirections[(i - 1, j - 1)]
 
-        inVision, directions = self.pathing.update()
-        if directions:
-            return random.choice(directions)
-        return "HERE"
+        offset = (
+            0 if self.anthillCoord[0] == self.x else (1 if self.anthillCoord[0] > self.x else -1),
+            0 if self.anthillCoord[1] == self.y else (1 if self.anthillCoord[1] > self.y else -1)
+        )
+        return NuAntPathing.offsetToDirections[offset]
