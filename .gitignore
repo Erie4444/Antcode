@@ -1,5 +1,3 @@
 __pycache__/
 
-AntLog.txt
-game.txt
-game_map.txt
+*.txt

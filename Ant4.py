@@ -2,8 +2,8 @@ from EricAntV3 import EricAntV3
 
 class Ant4(EricAntV3):
     def __init__(self, max_x, max_y, anthill):
-        super().__init__(max_x, max_y, anthill) # Call constructor in superclass
         self.id = 4
+        super().__init__(max_x, max_y, anthill) # Call constructor in superclass
 
     def receive_info(self, messages):
         super().receive_info(messages)

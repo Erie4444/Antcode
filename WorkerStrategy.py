@@ -17,7 +17,6 @@ class WorkerStrategy(AntStrategy):
         self.initLog()
         self.pathing = NuAntPathing(max_y,max_x)
         self.roundCounter = 0
-        self.id = 0
         self.state = "default"
         self.anthillCoord = findAnthillCoord(anthill,max_y,max_x)
 
@@ -38,6 +37,7 @@ class WorkerStrategy(AntStrategy):
         self.parseVision(vision)
         self.assignTarget()
         self.roundCounter+=1
+        self.log()
         return self.step()
 
 
@@ -50,6 +50,9 @@ class WorkerStrategy(AntStrategy):
 
     def defaultAlgorithm(self):
         self.state = "default"
+    
+    def stuckAlgorithm(self):
+        self.state = "stuck"
 
     def assignTarget(self):
         if self.food:
@@ -62,9 +65,8 @@ class WorkerStrategy(AntStrategy):
 
     def step(self):
         self.inVision,self.directions,self.isStuck = self.pathing.update()
-
         if self.isStuck:
-            self.assignTarget()
+            self.stuckAlgorithm()
             self.inVision,self.directions,self.isStuck = self.pathing.update()
 
     def parseVision(self, vision:list):
@@ -74,7 +76,11 @@ class WorkerStrategy(AntStrategy):
         raise NotImplementedError
     
     def initLog(self):
-        log  = open(r"AntLog.txt","w")
+        log = open(f"Ant{self.id}Log.txt","w")
         log.write("")
         log.close()
+        log = open("AntLog.txt","w")
+        log.write("")
+        log.close()
+
     

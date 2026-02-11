@@ -37,7 +37,7 @@ class EricAntV3 (WorkerStrategy):
                 ##removing coodinates the other ants have removed (took the last food in the pile)
                 for coord in message["REMOVED"]:
                     if coord in self.foodCoords:
-                        self.removedCoords.append(message["REMOVED"])
+                        removedCoords.append(message["REMOVED"])
         
         ##remove blacklisted and removed coords from the internal foodCoords variable
         for coord in blackListedCoords:
@@ -45,7 +45,7 @@ class EricAntV3 (WorkerStrategy):
                 self.foodCoords.remove(coord)
             if coord == self.target:
                 self.target = ()
-        for coord in self.removedCoords:
+        for coord in removedCoords:
             if coord in self.foodCoords:
                 self.foodCoords.remove(coord)
             if coord == self.target:
@@ -71,7 +71,15 @@ class EricAntV3 (WorkerStrategy):
     def defaultAlgorithm(self):
         super().defaultAlgorithm()
         self.pathing.clearTargets()
-        self.pathing.targets.append((10,10))
+        self.pathing.targets.append((self.max_x-2,self.max_y-2))
+    
+    def stuckAlgorithm(self):
+        super().stuckAlgorithm()
+        self.pathing.clearTargets()
+        if len(self.foodCoords) > 1: ##has more than 1 option
+            self.pathing.targets.append(random.choice([coord for coord in self.foodCoords if coord != self.target]))
+        else:
+            self.defaultAlgorithm()
     
     def step(self):
         action = ""
@@ -83,7 +91,7 @@ class EricAntV3 (WorkerStrategy):
             else:
                 action = "GET "
         action+=random.choice(self.directions)
-        print(action, self.target)
+        print(self.id,action, self.target, self.pathing.stuckCount)
         return action
     
     def parseVision(self, vision):
@@ -107,4 +115,9 @@ class EricAntV3 (WorkerStrategy):
                         self.removedCoords = (x-1+self.x,y-1+self.y)
 
     def log(self):
-        pass    
+        log = open(f"Ant{self.id}Log.txt","a")
+        log.write(f"Ant{self.id} | Round: {self.roundCounter} | Target: {self.target} | State: {self.state} | Pathing Targets: {self.pathing.targets} | Foods: {self.foodCoords} | Removed: {self.removedCoords}\n")
+        log.close()
+        log = open(f"AntLog.txt","a")
+        log.write(f"Ant{self.id} | Round: {self.roundCounter} | Target: {self.target} | State: {self.state} | Pathing Targets: {self.pathing.targets} | Foods: {self.foodCoords} | Removed: {self.removedCoords}\n")
+        log.close()
