@@ -1,184 +1,73 @@
 from AntStrategy import AntStrategy
 import random
-from collections import deque
 '''
 Yifong Liao
 2/9/2026
 using Eric's basic ant templete
+defender ant
 '''
 
 
-class BasicAnt(AntStrategy):
-    empty = ""
-    wall = "#"
-    """An ant's strategy (brains) for moving during the game.
-    
-    See superclass documentation for more about this class's methods and
-    attributes. This is a file you can copy to start making your own strategies.
-    """
-    
+class DefenderAnt(AntStrategy):
     def __init__(self, max_x, max_y, anthill):
-        super().__init__(max_x, max_y, anthill) # Call constructor in superclass
-        self.cellsToCheck = deque([])
-        self.targets = []
-        self.foods = []
-        ##figuring out where the anthill is
-        if anthill == "@":
-            self.anthill = (int((max_x-1)/2), 1)
-        else:
-            self.anthill = (max_x-(int((max_x-1)/2))-1, max_y-2)
-        self.directions=[(1,1),(1,0),(1,-1),(0,1),(0,-1),(-1,1),(-1,0),(-1,-1)]
-        self.stringDirections=["SOUTHEAST","EAST","NORTHEAST","SOUTH","NORTH","SOUTHWEST","WEST","NORTHWEST"]
-        self.x=""
-        self.y=""
-        ##initializing the internal boards
-        self.resetFloodBoard()
-        self.resetInternalBoard()
+        super().__init__(max_x, max_y, anthill)
+        self.wallCoords = []
+        self. tempObstacles = []
+        self.priority = 0
+        self.PatrolPoints = [
+            (2,2),
+            (max_x-3,2),
+            (2,max_y-3),
+            (max_x,max_y-3)
+        ]
+        self.currentTarget = random.choice(self.patrolPoints)
 
-    ##info sending & receiving not yet started
-    def receive_info(self, messages):
-        """Receive messages sent by teammates in the last round."""
-        pass
+    def recive_info(self, messages):
+        
+        for msg in messages:
+            self.wallCoords += msg.get("WALLS", [])
+        self.wallCoords = list(set(self.wallCoords))
 
     def send_info(self):
-        """Send messages to teammates at the end of a round."""
-        return []
+        #sends information to teamates
+        return [{"ID": self.priority, "FOOD": [], "WALLS": self.wallCoords, "TARGET": (), "REMOVED": ()}]
     
+    def updateInternalBoard(self, vision):
 
-    def one_step(self, x, y, vision, food):
-        self.x = x
-        self.y = y
-        self.hasFood = food
-        ##converting it so y is the row and x is the column (0,0) is the top left corner
-        actualVision = [[vision[x][y]for x in range(len(vision))]for y in range(len(vision))]
-        ##marks where it is
-        self.internalBoard[y][x] = "A"
-        ##updates the internalBoard with what it sees
-        self.updateInternalBoard(actualVision)
-        
-        ##====PATH GENERATION====
-        direction = self.generateDirection()
-        if direction != None:
-            print(direction)
-            return direction
-        else:
-            return "PASS"
-    
-    ##generates a 3x3 array of the flood values in its vision
-    def generateFloodVision(self):
-        vision = [['' for i in range(3)] for j in range(3)]
-        for xOffset,yOffset in self.directions:
-            vision[1+yOffset][1+xOffset] = self.floodBoard[self.y+yOffset][self.x+xOffset]
-        return vision
+        for dx, dy in self.directions:
+            cellX = self.x + dx
+            cellY = self.y + dy
+            val = vision[1+dy][1+dx]
 
-    ##detecting the shortest path based on the flood fill
-    def generateDirection(self):
-        ##to track where the shortest path is (distance for the value in the floodboard and index for the index in the direction lists)
-        smallestDistance = 999999
-        validDirections = []
-        for index,offsetTuple in enumerate(self.directions):
-            xOffset = offsetTuple[0]
-            yOffset = offsetTuple[1]
-            ##checking if the cell has a smaller floodvalue than the smallest one stored
-            if self.floodBoard[self.y+yOffset][self.x+xOffset]!="" and self.floodBoard[self.y+yOffset][self.x+xOffset] < smallestDistance:
-                ##setting the values
-                smallestDistance=self.floodBoard[self.y+yOffset][self.x+xOffset]
-                validDirections = [self.stringDirections[index]]
-            ## if it found another valid direction with the same smallest distance
-            elif self.floodBoard[self.y+yOffset][self.x+xOffset]!="" and self.floodBoard[self.y+yOffset][self.x+xOffset] == smallestDistance:
-                validDirections.append(self.stringDirections[index])
-        ##checking if a direction was found
-        if validDirections:
+            #track walls
+            if val == "#":
+                if (cellX, cellY) not in self.wallCoords:
+                    self.wallCoords.append((cellX, cellY))
             
-            chosenDirection = random.choice(validDirections)
-            ##if its destination is within its vision
-            if smallestDistance == 0:
-                if self.hasFood:
-                    return "DROP "+chosenDirection
-                else:
-                    return "GET "+chosenDirection
-            return chosenDirection  
-        ##if no flood values, go in a random direction
-        while True:
-            index = random.randrange(0,len(self.directions))
-            xOffset = self.directions[index][0]
-            yOffset = self.directions[index][1]
-            ##to not collide into walls or other ants
-            if self.internalBoard[self.y+yOffset][self.x+xOffset] != "#" and not self.internalBoard[self.y+yOffset][self.x+xOffset].isalpha():
-                print(self.stringDirections[index])
-                return self.stringDirections[index]
+            #track other ants
+            elif val.isalpha() and val not in "@X":
+                if (cellX, cellY) not in self.tempObstacles:
+                    self.tempObstacles.append((cellX, cellY))
+
+            #update board again
+            self.internalBoard[cellY][cellX] = val
 
 
-    ##used for testing
-    def generateNewCoord(self):
-        self.targetCoord = (random.randrange(1,self.max_x-1), random.randrange(1,self.max_y-1))
-        self.targets.append(self.targetCoord)
-
-    ##initializes the queue for flood fill
-    def initQueue(self):
-        self.cellsToCheck = deque(self.targets)
-    
-    ##sets the current targets
-    def initTargets(self):
-        if self.hasFood:
-            self.targets = [self.anthill]
-        else:
-            self.targets = self.foods
-    
-    def addWalls(self,count):
-        for i in range(count):
-            self.internalBoard[random.randrange(1,self.max_y)][random.randrange(1,self.max_x-1)] = "#"
-    
-    def updateInternalBoard(self,vision):
-        for xOffset, yOffset in self.directions:
-            ##updating the internal board based on vision
-            self.internalBoard[self.y+yOffset][self.x+xOffset] = vision[1+yOffset][1+xOffset]
-            ##removes empty food piles
-            if (self.x+xOffset,self.y+yOffset) in self.foods and vision[1+yOffset][1+xOffset] == ".":
-                self.foods.remove((self.x+xOffset,self.y+yOffset))
-            ##checking if there is any food in vision
-            if vision[1+yOffset][1+xOffset].isnumeric():
-                ##adds the coordinate to the foods list
-                self.foods.append((self.x+xOffset,self.y+yOffset))
-                self.foods = list(set(self.foods))
         self.updateFloodFill()
-        self.printFloodBoard()
 
-    ##flood fill
-    def updateFloodFill(self):
-        self.initTargets()
-        self.initQueue()
-        self.resetFloodBoard()
-        while self.cellsToCheck:
-            cell = self.cellsToCheck.popleft()
-            Cellx,Celly = cell[0],cell[1]
-            for xOffset,yOffset in self.directions:
-                xCurrent,yCurrent = Cellx+xOffset,Celly+yOffset
-                if self.internalBoard[yCurrent][xCurrent] != self.wall and self.floodBoard[yCurrent][xCurrent] == self.empty:
-                    self.floodBoard[yCurrent][xCurrent] = self.floodBoard[Celly][Cellx]+1
-                    self.cellsToCheck.append((xCurrent,yCurrent))
-        self.floodBoard[self.y][self.x] = "A"
+    def initTargets(self):
 
-    def printFloodBoard(self):
-        for row in self.floodBoard:
-            print(row)
-    
-    def printInternalBoard(self):
-        for row in self.internalBoard:
-            print(row)
-    
-    def printCellQueue(self):
-        print(self.cellsToCheck)
-    
-    def printTargets(self):
-        print(self.targets)
-    
-    def resetFloodBoard(self):
-        self.floodBoard = [[self.empty for i in range(self.max_x)] for j in range(self.max_y)]
-        for x,y in self.targets:
-            self.floodBoard[y][x]=0
+        self.targets = [self.currentTarget]
 
-    def resetInternalBoard(self):
-        self.internalBoard = [["." if i>0 and i<self.max_x-1 and j>0 and j<self.max_y-1 else self.wall for i in range(self.max_x)] for j in range(self.max_y)]
+    
+    def generateDirection(self):
 
-        
+        direction = super().generateDirection()
+
+        if (self.x, self.y) == self.currectTarget:
+            self.currentTarget = random.choice(self.patrolPoints)
+            self.targets = [self.currentTarget]
+            self.initQueue()
+        return direction
+    
+                                           
