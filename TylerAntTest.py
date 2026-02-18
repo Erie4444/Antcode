@@ -32,7 +32,7 @@ class TylerAnt(AntStrategy):
 
         if (self.x, self.y) == self.anthillCoord:
             if food:
-                return "DROP " + str((self.x, self.y))
+                return "DROP HERE"
             return NuAntPathing.offsetToDirections[random.choice(cardinals)]
 
         if not food:
