@@ -1,4 +1,4 @@
-from WorkerStrategy import WorkerStrategy
+from Strategies.WorkerStrategy import WorkerStrategy
 
 class WorkerTemplate (WorkerStrategy):
     def __init__(self, max_x, max_y, anthill):
