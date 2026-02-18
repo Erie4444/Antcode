@@ -1,23 +1,17 @@
-from Strategies.WorkerStrategy import WorkerStrategy
+from Strategies.ScoutStrategy import ScoutStrategy
 from Util import *
 import random
 
-class EricAntV3 (WorkerStrategy):
+class EricScout (ScoutStrategy):
     def __init__(self, max_x, max_y, anthill):
         super().__init__(max_x, max_y, anthill)
         self.target = ()
         self.foodCoords = []
         self.wallCoords = []
         self.removedCoords = []
-    
-    def initTargets(self):
-        self.pathing.clearTargets()
-        if self.target:
-            self.pathing.targets.append(self.target)
-        
-    def resetTargets(self):
-        self.pathing.clearTargets()
-        self.target = ()
+        self.id = 0
+        self.patrolCoords = [(3,3),(max_x-3,max_y-3),(3,max_y-3),(max_x-3,3)]
+        self.patrolIndex = 0
 
     def receive_info(self, messages):
         blackListedCoords = []
@@ -52,47 +46,25 @@ class EricAntV3 (WorkerStrategy):
                 self.target = ()
 
     def send_info(self):
-        return [{"ID":self.id,"FOOD":self.foodCoords,"WALLS":self.wallCoords,"TARGET":self.target,"REMOVED":self.removedCoords}]
+        return [{"ID":self.id,"FOOD":self.foodCoords,"WALLS":self.wallCoords,"TARGET":(),"REMOVED":self.removedCoords}]
+
     
     def one_step(self, x, y, vision, food):
         return super().one_step(x,y,vision,food)
-    
-    def seekingAlgorithm(self):
-        super().seekingAlgorithm()
-        if not self.target:
-            self.target = random.choice(self.foodCoords) if self.foodCoords else ()
-        self.initTargets()
-    
-    def retreatAlgorithm(self):
-        super().retreatAlgorithm()
-        self.target = self.anthillCoord
-        self.initTargets()
-    
-    def defaultAlgorithm(self):
-        super().defaultAlgorithm()
-        self.pathing.clearTargets()
-        self.pathing.targets.append((self.max_x-2,self.max_y-2))
+
+    def patrolAlgorithm(self):
+        super().patrolAlgorithm()
+        if (self.x,self.y) == self.patrolCoords[self.patrolIndex] or not self.pathing.targets:
+            self.patrolIndex = self.patrolIndex + 1 if self.patrolIndex < len(self.patrolCoords)-1 else 0
+            self.pathing.clearTargets()
+            self.pathing.targets.append(self.patrolCoords[self.patrolIndex])
     
     def stuckAlgorithm(self):
         super().stuckAlgorithm()
-        self.pathing.clearTargets()
-        if len(self.foodCoords) > 1: ##has more than 1 option
-            self.pathing.targets.append(random.choice([coord for coord in self.foodCoords if coord != self.target]))
-        else:
-            self.defaultAlgorithm()
     
     def step(self):
-        action = ""
         super().step()
-        if self.inVision:
-            if self.food:
-                action = "DROP "
-                self.resetTargets()
-            else:
-                action = "GET "
-        action+=random.choice(self.directions)
-        print(self.id,action, self.target, self.pathing.stuckCount)
-        return action
+        return random.choice(self.directions)
     
     def parseVision(self, vision):
         for y, row in enumerate(transpose(vision)):
@@ -102,8 +74,8 @@ class EricAntV3 (WorkerStrategy):
                     self.wallCoords.append((x-1+self.x,y-1+self.y))
                     self.wallCoords = list(set(self.wallCoords))
 
-                ## if it is another ant NOTE: 2nd part of the statement is to ignore if its the anthill to mitigate the AnnoyingAnt
-                elif item.isalpha() and not item in self.anthills and (x-1+self.x,y-1+self.y) != self.anthillCoord: 
+                ## if it is another ant (doesn't need annoyingAnt protection)
+                elif item.isalpha() and not item in self.anthills: 
                     self.pathing.tempWalls.append((x-1+self.x,y-1+self.y))
                 ##it found a food
                 elif item != self.empty and not item in self.anthills:
@@ -113,11 +85,6 @@ class EricAntV3 (WorkerStrategy):
                     if (x-1+self.x,y-1+self.y) in self.foodCoords:
                         self.foodCoords.remove((x-1+self.x,y-1+self.y))
                         self.removedCoords = (x-1+self.x,y-1+self.y)
-
+    
     def log(self):
-        log = open(f"Ant{self.id}Log.txt","a")
-        log.write(f"Ant{self.id} | Round: {self.roundCounter} | Target: {self.target} | State: {self.state} | Pathing Targets: {self.pathing.targets} | Foods: {self.foodCoords} | Removed: {self.removedCoords}\n")
-        log.close()
-        log = open(f"AntLog.txt","a")
-        log.write(f"Ant{self.id} | Round: {self.roundCounter} | Target: {self.target} | State: {self.state} | Pathing Targets: {self.pathing.targets} | Foods: {self.foodCoords} | Removed: {self.removedCoords}\n")
-        log.close()
+        pass

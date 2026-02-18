@@ -16,18 +16,19 @@ import traceback
 
 # A. Import student strategies here
 from Old_Templates.StarterStrat import StarterStrat
-from Ant1 import Ant1
+#from Ant1 import Ant1
 from Ant2 import Ant2
 from Ant3 import Ant3
 from Ant4 import Ant4
 from Ant5 import Ant5
 from EricAntV3 import EricAntV3
+from Ant1Scout import Ant1
 from AnnoyingAnt import AnnoyingAnt
 
 # B. Register strategy class names in team1/team2 tuples below, 1-5 ants per team
 ##team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat, RandomStrat)
 ##team2 = (GridBuilderStrat, SmarterRandomStrat, HorizontalStrat, VerticalStrat, RandomStrat)
-team1 = (Ant1,Ant2,Ant3,Ant4,Ant5)
+team1 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
 team2 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
 DEBUG = True # Change this to True to get more detailed errors from ant strategies
 
