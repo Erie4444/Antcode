@@ -16,25 +16,29 @@ class TylerAnt(AntStrategy):
         self.x = 0
         self.y = 0
         self.id = 0
+        self.foods = []
+        self.walls = []
+        self.target = ()
+        self.removed = []
 
     def receive_info(self, messages):
-        """Receive messages sent by teammates in the last round."""
-        pass
+        self.foods,self.walls,self.target = parseMessages(messages,self.id,self.foods,self.walls,self.target)
 
     def send_info(self):
-        return []
-        #return [{"ID":self.id,"FOOD":self.foodCoords,"WALLS":self.wallCoords,"TARGET":self.target,"REMOVED":self.removedCoords}]
+        return sendMessage(self.id,self.foods,self.walls,self.target,self.removed)
 
     def one_step(self, x, y, vision, food):
         self.x = x
         self.y = y
         cardinals = [(0, -1), (1, 0), (0, 1), (-1, 0), (1, -1), (1, 1), (-1, 1), (-1, -1)]
+        self.pathing.clearTargets()
+        
 
         if (self.x, self.y) == self.anthillCoord:
             if food:
                 return "DROP HERE"
             return NuAntPathing.offsetToDirections[random.choice(cardinals)]
-
+        self.pathing.update()
         if not food:
             for i in range(3):
                 for j in range(3):

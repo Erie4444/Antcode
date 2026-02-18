@@ -7,7 +7,7 @@ def findAnthillCoord(anthill: str,rows: int, cols: int):
     else:
         return (cols-(int((cols-1)/2))-1, rows-2)
 
-def parseMessages(messages,id,foodCoords,wallCoords,target,):
+def parseMessages(messages,id,foodCoords,wallCoords,target):
     blackListedCoords = []
     removedCoords = []
 
