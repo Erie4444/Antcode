@@ -15,6 +15,7 @@ class TylerAnt(AntStrategy):
         self.anthillCoord = findAnthillCoord(anthill, max_x, max_y)
         self.x = 0
         self.y = 0
+        self.id = 0
 
     def receive_info(self, messages):
         """Receive messages sent by teammates in the last round."""
@@ -22,16 +23,16 @@ class TylerAnt(AntStrategy):
 
     def send_info(self):
         return []
-    
+        #return [{"ID":self.id,"FOOD":self.foodCoords,"WALLS":self.wallCoords,"TARGET":self.target,"REMOVED":self.removedCoords}]
 
     def one_step(self, x, y, vision, food):
         self.x = x
         self.y = y
-        cardinals = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+        cardinals = [(0, -1), (1, 0), (0, 1), (-1, 0), (1, -1), (1, 1), (-1, 1), (-1, -1)]
 
         if (self.x, self.y) == self.anthillCoord:
             if food:
-                return "DROP HERE"
+                return "DROP " + str((self.x, self.y))
             return NuAntPathing.offsetToDirections[random.choice(cardinals)]
 
         if not food:
