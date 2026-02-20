@@ -11,8 +11,8 @@ Using NuAntTemplateV2.py as a base for my ant strategy'''
 class TylerAnt(AntStrategy):
     def __init__(self, max_x, max_y, anthill):
         super().__init__(max_x, max_y, anthill) #call constructor in superclass
-        self.pathing = NuAntPathing(max_x,max_y)
-        self.anthillCoord = findAnthillCoord(anthill, max_x, max_y)
+        self.pathing = NuAntPathing(max_y,max_x)
+        self.anthillCoord = findAnthillCoord(anthill, max_y, max_x)
         self.x = 0
         self.y = 0
         self.id = 0
@@ -30,29 +30,29 @@ class TylerAnt(AntStrategy):
     def one_step(self, x, y, vision, food):
         self.x = x
         self.y = y
-        cardinals = [(0, -1), (1, 0), (0, 1), (-1, 0), (1, -1), (1, 1), (-1, 1), (-1, -1)]
-        self.pathing.clearTargets()
-        
+        self.pathing.updatePosition(self.x, self.y)
 
-        if (self.x, self.y) == self.anthillCoord:
-            if food:
-                return "DROP HERE"
-            return NuAntPathing.offsetToDirections[random.choice(cardinals)]
-        self.pathing.update()
         if not food:
             for i in range(3):
                 for j in range(3):
                     if vision[i][j] and vision[i][j].isdigit():
-                        return "GET " + NuAntPathing.offsetToDirections[(i - 1, j - 1)]
-            return NuAntPathing.offsetToDirections[random.choice(cardinals)]
+                        self.pathing.clearTargets()
+                        self.pathing.targets.append((self.x + i - 1, self.y + j - 1))
+        elif food:
+            self.pathing.clearTargets()
+            self.pathing.targets.append(self.anthillCoord)
+        
+        if not self.pathing.targets:
+            self.pathing.clearTargets()
+            self.pathing.targets.append((self.max_x-2, self.max_y-2))
 
-        for i in range(3):
-            for j in range(3):
-                if vision[i][j] == self.anthill:
-                    return "DROP " + NuAntPathing.offsetToDirections[(i - 1, j - 1)]
-
-        offset = (
-            0 if self.anthillCoord[0] == self.x else (1 if self.anthillCoord[0] > self.x else -1),
-            0 if self.anthillCoord[1] == self.y else (1 if self.anthillCoord[1] > self.y else -1)
-        )
-        return NuAntPathing.offsetToDirections[offset]
+        print(self.pathing.targets)
+        inVision, directions, isStuck = self.pathing.update()
+        if inVision:
+            if food:
+                self.pathing.clearTargets()
+                return "DROP "+random.choice(directions)
+            else:
+                return "GET "+random.choice(directions)
+        else:
+            return random.choice(directions)
