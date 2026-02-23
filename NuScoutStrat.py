@@ -18,14 +18,15 @@ class NuScoutStrat(AntStrategy):
     def __init__(self, max_x, max_y, anthill):
         super().__init__(max_x, max_y, anthill)
 
-        self.pathing = NuAntPathing(max_x, max_y)
+        self.pathing = NuAntPathing(max_y, max_x)
         self.foodCoords = []
         self.wallCoords = []
         self.priorityTarget = ()
         self.removedCoords = []             
         self.blackListedCoords = []          
-        self.anthillCoord = findAnthillCoord(anthill, max_x, max_y)
+        self.anthillCoord = findAnthillCoord(anthill, max_y, max_x)
         self.priority = 0
+        self.delivered = False ##if the ant has delivered yet
 
     def receive_info(self, messages):
         """Receive messages sent by teammates in the last round."""
@@ -55,7 +56,7 @@ class NuScoutStrat(AntStrategy):
         if self.foodCoords:
             self.priorityTarget = random.choice(self.foodCoords)
             self.pathing.clearTargets()
-            self.pathing.targets.append(self.priorityTarget)
+            self.pathing.targets.append(self.priorityTarget) ##
 
     def one_step(self, x, y, vision, food):
         self.x = x
@@ -64,31 +65,56 @@ class NuScoutStrat(AntStrategy):
 
         self.pathing.updatePosition(x, y)
         self.parseVision(vision)
+        
+        cardinals = { "NORTH": (1, 0), ##cardinals from smarter random strat
+                "SOUTH": (1, 2),
+                "EAST": (2, 1),
+                "WEST": (0, 1),
+                "NORTHEAST": (2, 0),
+                "SOUTHEAST": (2, 2),
+                "SOUTHWEST": (0, 2),
+                "NORTHWEST": (0, 0),
+                "HERE": (1,1) }
+                
+        if food and not self.delivered: ##if you are carrying food and haven't delivered food yet
+            self.pathing.clearTargets() ##Stops going anywhere else
+            self.priorityTarget = ()
+            self.pathing.targets.append(self.anthillCoord) ##goes to anthill to drop the food
 
-        if food:
+        elif (self.foodCoords and self.priorityTarget not in self.foodCoords) and not self.delivered:
+            self.assignNewTarget()
+            
+        elif self.delivered: ##once you have delivered you just randomly wander around
             self.pathing.clearTargets()
             self.priorityTarget = ()
-            self.pathing.targets.append(self.anthillCoord)
-        else:
-            if self.foodCoords and self.priorityTarget not in self.foodCoords:
-                self.assignNewTarget()
-
+            while True: ##keeps checking every direction until not its not a wall or ant
+                move = random.choice(["NORTH", "NORTHEAST", "EAST", "SOUTHEAST", "SOUTH", "SOUTHWEST", "WEST", "NORTHWEST"])
+                coords = cardinals[move] ##checks the coordinates in the dictionary depending on the direction
+                tile = vision[coords[0]][coords[1]]
+                if tile != "#" and not tile.isalpha(): ##Tries not to run straight into another ants current location in it's vision if it passes to minimie chance of collision.
+                    return move 
+                
         if not self.pathing.targets:
-            self.pathing.targets.append((10, 10))
 
-        inVision, directions, _ = self.pathing.update()
+            self.pathing.targets.append((10, 10)) ##if there is NO other targets, go to 10, 10 as a fallback
+
+        inVision, directions, _ = self.pathing.update() 
         if not directions:
-            directions = ["N", "E", "W", "S"]
+                direction = random.choice(["NORTH", "NORTHEAST", "EAST", "SOUTHEAST", "SOUTH", "SOUTHWEST", "WEST", "NORTHWEST", "HERE"])
         pickedDirection = random.choice(directions)
         
 
-        if inVision and len(directions) == 1:
-            action = "DROP " if food else "GET "
+        if inVision and len(directions) == 1: ##if the target (anthill) is 
+            if food and not self.delivered: ##if you are carrying food (which means you are going to your anthill) you drop it there.
+                action = "DROP "
+                self.delivered = True
+            else:
+                action = "GET " ##Your target is food since your not carrying it and have not delivered, so you can take it
 
-        action += pickedDirection
+        action += pickedDirection ##Action
         print([self.pathing.targets, self.priorityTarget, food, action])
         return action
-
+        
     def parseVision(self, vision):
         for y, row in enumerate(transpose(vision)):
             for x, item in enumerate(row):

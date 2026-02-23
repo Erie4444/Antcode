@@ -1,73 +1,67 @@
-from AntStrategy import AntStrategy
 import random
+from AntStrategy import AntStrategy
+from NuAntPathing import NuAntPathing
+from Util import *
 '''
 Yifong Liao
-2/9/2026
-using Eric's basic ant templete
-defender ant
+2/10/2026
 '''
 
 
-class DefenderAnt(AntStrategy):
-    def __init__(self, max_x, max_y, anthill):
-        super().__init__(max_x, max_y, anthill)
-        self.wallCoords = []
-        self. tempObstacles = []
-        self.priority = 0
-        self.PatrolPoints = [
-            (2,2),
-            (max_x-3,2),
-            (2,max_y-3),
-            (max_x,max_y-3)
-        ]
-        self.currentTarget = random.choice(self.patrolPoints)
 
-    def recive_info(self, messages):
-        
-        for msg in messages:
-            self.wallCoords += msg.get("WALLS", [])
-        self.wallCoords = list(set(self.wallCoords))
+class YifongTestAnt(AntStrategy):
+    def __init__(self, max_x, max_y, anthill):
+        super().__init__(max_x, max_y, anthill) #call constructor in superclass
+        # NuAntPathing expects rows (max_y) then columns (max_x)
+        self.pathing = NuAntPathing(max_y, max_x)
+        self.anthillCoord = findAnthillCoord(anthill, max_x, max_y)
+        self.x = 0
+        self.y = 0
+
+    def receive_info(self, messages):
+        """Receive messages sent by teammates in the last round."""
+        pass
 
     def send_info(self):
-        #sends information to teamates
-        return [{"ID": self.priority, "FOOD": [], "WALLS": self.wallCoords, "TARGET": (), "REMOVED": ()}]
+        return []
     
-    def updateInternalBoard(self, vision):
 
-        for dx, dy in self.directions:
-            cellX = self.x + dx
-            cellY = self.y + dy
-            val = vision[1+dy][1+dx]
+    def one_step(self, x, y, vision, food):
+        self.x = x
+        self.y = y
+        # Update pathing internal position to track movement and stuck status
+        self.pathing.updatePosition(x, y)
+        
+        # Scan vision to update the pathfinder's knowledge of walls
+        for i in range(3):
+            for j in range(3):
+                # vision[i][j] is a list or string; check if wall character is present
+                if '#' in vision[i][j]:
+                    self.pathing.addWall(x + (i - 1), y + (j - 1))
 
-            #track walls
-            if val == "#":
-                if (cellX, cellY) not in self.wallCoords:
-                    self.wallCoords.append((cellX, cellY))
+        for i in range(3):
+            for j in range(3):
+                cell_content = vision[i][j]
+          
+                direction = NuAntPathing.offsetToDirections.get((i - 1, j - 1))
+                
+              
+                if not food and any(char.isdigit() for char in cell_content):
+                    return "GET " + direction
+                
+               
+                if food and self.anthill in cell_content:
+                    return "DROP " + direction
+
+       
+        if food and self.anthillCoord:
+            self.pathing.targets = [self.anthillCoord]
             
-            #track other ants
-            elif val.isalpha() and val not in "@X":
-                if (cellX, cellY) not in self.tempObstacles:
-                    self.tempObstacles.append((cellX, cellY))
+            can_see, valid_dirs, stuck = self.pathing.update()
+            if valid_dirs:
+                return random.choice(valid_dirs)
 
-            #update board again
-            self.internalBoard[cellY][cellX] = val
-
-
-        self.updateFloodFill()
-
-    def initTargets(self):
-
-        self.targets = [self.currentTarget]
-
-    
-    def generateDirection(self):
-
-        direction = super().generateDirection()
-
-        if (self.x, self.y) == self.currectTarget:
-            self.currentTarget = random.choice(self.patrolPoints)
-            self.targets = [self.currentTarget]
-            self.initQueue()
-        return direction
-    
-                                           
+        
+        cardinals = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+        return NuAntPathing.offsetToDirections[random.choice(cardinals)]
+    #67th line code 
