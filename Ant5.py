@@ -1,6 +1,7 @@
 from EricAntV3 import EricAntV3
+from EricScoutV1 import EricScout
 
-class Ant5(EricAntV3):
+class Ant5(EricScout):
     def __init__(self, max_x, max_y, anthill):
         self.id = 5
         super().__init__(max_x, max_y, anthill) # Call constructor in superclass
@@ -13,3 +14,4 @@ class Ant5(EricAntV3):
     
     def one_step(self, x, y, vision, food):
         return super().one_step(x,y,vision,food)
+ 
