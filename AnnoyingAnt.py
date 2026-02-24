@@ -14,7 +14,7 @@ class AnnoyingAnt(AntStrategy):
     anthills = "@X"
     def __init__(self, max_x, max_y, anthill):
         super().__init__(max_x, max_y, anthill) # Call constructor in superclass
-        self.pathing = NuAntPathing(max_x,max_y)
+        self.pathing = NuAntPathing(max_y,max_x)
         ##setting its target as the opponent's anthill
         self.pathing.targets.append(findAnthillCoord("X" if anthill == "@" else "@",max_y,max_x))
 
