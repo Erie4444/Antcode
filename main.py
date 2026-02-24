@@ -11,25 +11,21 @@
 from concurrent.futures import wait, ProcessPoolExecutor, ThreadPoolExecutor, TimeoutError
 import os
 import random
-import time
 import traceback
 
 # A. Import student strategies here
-from Old_Templates.StarterStrat import StarterStrat
-from Ant1 import Ant1
-from Ant2 import Ant2
-from Ant3 import Ant3
-from Ant4 import Ant4
-from Ant5 import Ant5
-from EricAntV3 import EricAntV3
-from Ant1Scout import Ant1
-from AnnoyingAnt import AnnoyingAnt
-
+from NuScoutStrat import NuScoutStrat
+from YifongTestAnt import YifongTestAnt
+from TylerAntTest import TylerAnt
+from AnnoyingAntV2 import AnnoyingAnt
+from Old_Templates.GridBuilderStrat import GridBuilderStrat
+from Old_Templates.StraightHomeStrat import StraightHomeStrat
+from SanjayStrat import betterStraightHomeStrat
 # B. Register strategy class names in team1/team2 tuples below, 1-5 ants per team
 ##team1 = (RandomStrat, SmarterRandomStrat, StraightHomeStrat, ScoutStrat, RandomStrat)
 ##team2 = (GridBuilderStrat, SmarterRandomStrat, HorizontalStrat, VerticalStrat, RandomStrat)
-team1 = (Ant1,Ant2,Ant3,Ant4,Ant5)
-team2 = (StarterStrat,StarterStrat,StarterStrat,StarterStrat,StarterStrat)
+team1 = (NuScoutStrat,YifongTestAnt,AnnoyingAnt,TylerAnt,betterStraightHomeStrat)
+team2 = (GridBuilderStrat,GridBuilderStrat,GridBuilderStrat,GridBuilderStrat,GridBuilderStrat)
 DEBUG = True # Change this to True to get more detailed errors from ant strategies
 
 # --- Begin Game ---

@@ -15,7 +15,7 @@ class TylerAnt(AntStrategy):
         self.anthillCoord = findAnthillCoord(anthill, max_y, max_x)
         self.x = 0
         self.y = 0
-        self.id = 0
+        self.id = 4
         self.foods = []
         self.walls = []
         self.target = ()

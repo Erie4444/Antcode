@@ -7,7 +7,7 @@ import json
 '''
 Sherjil Khan
 2/2/2026
-Uses NuAntTemplateV2. Modified to grab one piece of food and then scout full tame afterwards.
+Uses NuAntTemplateV2. Modified to grab one piece of food and then scout full time afterwards.
 '''
 
 class NuScoutStrat(AntStrategy):
@@ -25,7 +25,7 @@ class NuScoutStrat(AntStrategy):
         self.removedCoords = []             
         self.blackListedCoords = []          
         self.anthillCoord = findAnthillCoord(anthill, max_y, max_x)
-        self.priority = 0
+        self.priority = 1
         self.delivered = False ##if the ant has delivered yet
 
     def receive_info(self, messages):
